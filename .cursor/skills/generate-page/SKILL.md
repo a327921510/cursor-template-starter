@@ -74,7 +74,7 @@ src/pages/<PageName>/
 ## 生成规则（必须遵守）
 
 ### 页面入口 (index.tsx)
-- 导出命名组件 `export function <PageName>Page()`
+- 导出命名组件 `export function <PageName>Page()` 并追加 `export default <PageName>Page`（路由 `lazy()` 需要默认导出）
 - 调用业务 Hooks 获取 `state + actions`
 - 持有跨区域共享状态（`useState` / `useRef`）
 - 将数据和回调通过 props 传给区域组件和纯展示组件
@@ -111,7 +111,8 @@ src/pages/<PageName>/
 ## 代码风格要求
 
 - TypeScript strict mode
-- 函数组件 + 命名导出（`export function`，不用 `export default`）
+- 函数组件 + 命名导出（`export function`）
+- 页面入口额外追加 `export default`（路由 `React.lazy()` 需要），其他组件/Hook 不加
 - Props 类型与组件同文件，使用 `type` 定义并 `export`
 - `useCallback` / `useMemo` 用于：传给子组件的回调、昂贵计算
 - 注释只在不明显的地方写，不写废话注释

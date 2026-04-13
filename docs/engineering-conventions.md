@@ -1,7 +1,7 @@
 # 工程化配置与开发约定
 
 > 本文档梳理项目从 0 到 1 需要建立的**工程化配置**和**开发约定**。  
-> 技术栈：React 19 + TypeScript / Vite + pnpm / Ant Design / Tailwind CSS v4 + Less (CSS Modules) / React Router DOM v6 / Zustand / Axios / oxlint + oxfmt / vite-plugin-svgr
+> 技术栈：React 19 + TypeScript / Vite + pnpm / Ant Design / Tailwind CSS v4 + Less (CSS Modules) / React Router DOM v6 / Zustand / Axios / oxlint + Prettier / vite-plugin-svgr
 
 ---
 
@@ -34,20 +34,20 @@
 
 | 项目 | 约定 |
 |------|------|
-| Node 版本 | ≥ 20 LTS，`.node-version` 或 `.nvmrc` 锁定 |
-| 包管理器 | pnpm ≥ 9，`package.json` 中配置 `"packageManager"` 字段 |
+| Node 版本 | ≥ 20 LTS，`.node-version` 锁定 |
+| 包管理器 | pnpm（不锁定具体版本，兼容 8/9/10） |
 | 锁文件 | 只允许 `pnpm-lock.yaml`，`.npmrc` 中设置 `engine-strict=true` |
 
 ```jsonc
 // package.json (片段)
 {
-  "packageManager": "pnpm@9.15.0",
   "engines": {
-    "node": ">=20.0.0",
-    "pnpm": ">=9.0.0"
+    "node": ">=20.0.0"
   }
 }
 ```
+
+> 不设置 `packageManager` 字段和 `engines.pnpm`，避免团队成员 pnpm 版本不一致时被阻断。
 
 ```ini
 # .npmrc
@@ -100,8 +100,7 @@ src/
 │   └── variables.less       # Less 全局变量（如需）
 ├── types/                   # 全局类型定义
 │   ├── api.d.ts             # API 通用响应类型
-│   ├── global.d.ts          # 全局类型扩展
-│   └── vite-env.d.ts        # Vite 环境类型
+│   └── global.d.ts          # 全局类型扩展（SVG、CSS Modules）
 ├── utils/                   # 工具函数
 │   ├── format.ts
 │   ├── storage.ts
@@ -109,7 +108,7 @@ src/
 ├── constants/               # 全局常量
 ├── App.tsx                  # 根组件（挂载路由、全局 Provider）
 ├── main.tsx                 # 入口文件
-└── vite-env.d.ts
+└── vite-env.d.ts            # Vite 环境类型（ImportMetaEnv）
 ```
 
 ### 2.1 目录职责边界
@@ -126,9 +125,23 @@ src/
 
 ## 3. TypeScript 配置
 
-### 3.1 tsconfig.json
+### 3.1 项目引用（Project References）
+
+项目使用 TypeScript 项目引用，将应用代码和 Node 配置文件分开编译：
 
 ```jsonc
+// tsconfig.json — 根文件，仅做引用
+{
+  "files": [],
+  "references": [
+    { "path": "./tsconfig.app.json" },
+    { "path": "./tsconfig.node.json" }
+  ]
+}
+```
+
+```jsonc
+// tsconfig.app.json — 应用代码（src/）
 {
   "compilerOptions": {
     "target": "ES2020",
@@ -136,12 +149,16 @@ src/
     "module": "ESNext",
     "moduleResolution": "bundler",
     "jsx": "react-jsx",
+    "verbatimModuleSyntax": true,
 
     // 严格模式
     "strict": true,
     "noUncheckedIndexedAccess": true,
     "noImplicitOverride": true,
     "forceConsistentCasingInFileNames": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
 
     // 路径别名
     "baseUrl": ".",
@@ -149,12 +166,26 @@ src/
       "@/*": ["src/*"]
     },
 
-    // 输出
     "skipLibCheck": true,
-    "isolatedModules": true,
     "noEmit": true
   },
-  "include": ["src", "vite.config.ts"]
+  "include": ["src"]
+}
+```
+
+```jsonc
+// tsconfig.node.json — 构建配置文件（vite.config.ts 等）
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "verbatimModuleSyntax": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "noEmit": true
+  },
+  "include": ["vite.config.ts"]
 }
 ```
 
@@ -699,7 +730,25 @@ declare module "*.svg?react" {
 > oxlint 是基于 Rust 的高性能 Lint 工具，替代 ESLint。
 > Prettier 负责代码格式化，通过 VS Code 扩展 `esbenp.prettier-vscode` 实现保存时自动格式化。
 
-### 10.2 oxlint 配置
+### 10.2 Prettier 配置
+
+```jsonc
+// .prettierrc
+{
+  "semi": true,
+  "singleQuote": false,
+  "tabWidth": 2,
+  "trailingComma": "all",
+  "printWidth": 100,
+  "bracketSpacing": true,
+  "arrowParens": "always",
+  "endOfLine": "lf"
+}
+```
+
+同时配置 `.prettierignore` 排除 `dist`、`node_modules`、`pnpm-lock.yaml`。
+
+### 10.3 oxlint 配置
 
 ```jsonc
 // oxlintrc.json
@@ -715,7 +764,7 @@ declare module "*.svg?react" {
 }
 ```
 
-### 10.3 package.json scripts
+### 10.4 package.json scripts
 
 ```jsonc
 {
@@ -731,7 +780,7 @@ declare module "*.svg?react" {
 }
 ```
 
-### 10.4 编辑器集成
+### 10.5 编辑器集成
 
 - 统一使用 `.editorconfig`
 - VS Code / Cursor 推荐扩展放在 `.vscode/extensions.json`
@@ -871,7 +920,7 @@ VITE_API_BASE_URL=/api
 ### 12.3 类型安全
 
 ```typescript
-// src/types/vite-env.d.ts
+// src/vite-env.d.ts
 /// <reference types="vite/client" />
 
 interface ImportMetaEnv {
@@ -883,6 +932,8 @@ interface ImportMeta {
   readonly env: ImportMetaEnv;
 }
 ```
+
+> 此文件放在 `src/vite-env.d.ts`（Vite 脚手架默认位置），而非 `src/types/` 目录下。
 
 ---
 
@@ -1173,14 +1224,14 @@ steps:
 | `pnpm-lock.yaml` | 依赖锁文件 | 是 |
 | `.npmrc` | pnpm/npm 配置 | 是 |
 | `.node-version` | Node 版本锁定 | 是 |
-| `tsconfig.json` | TypeScript 配置 | 是 |
+| `tsconfig.json` + `tsconfig.app.json` + `tsconfig.node.json` | TypeScript 配置（项目引用） | 是 |
 | `vite.config.ts` | Vite 构建配置 | 是 |
 | `oxlintrc.json` | oxlint 规则 | 是 |
 | `.prettierrc` | Prettier 格式化规则 | 是 |
 | `.prettierignore` | Prettier 忽略文件 | 是 |
 | `.editorconfig` | 编辑器通用格式 | 是 |
 | `.gitignore` | Git 忽略规则 | 是 |
-| `.env` / `.env.*` | 环境变量 | 是 |
+| `.env` / `.env.development` / `.env.production` | 环境变量（`.env.local` 不提交） | 是 |
 | `vitest.config.ts` | Vitest 测试配置 | 推荐 |
 | `.vscode/settings.json` | 编辑器设置 | 推荐 |
 | `.vscode/extensions.json` | 推荐扩展 | 推荐 |
