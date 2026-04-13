@@ -694,9 +694,10 @@ declare module "*.svg?react" {
 | 工具 | 用途 | 配置文件 |
 |------|------|---------|
 | oxlint | 代码检查（Lint） | `oxlintrc.json` |
-| oxfmt | 代码格式化（Format） | `oxfmt.json` 或命令行参数 |
+| Prettier | 代码格式化（Format） | `.prettierrc` |
 
-> oxlint 和 oxfmt 是基于 Rust 的高性能工具，替代 ESLint + Prettier。
+> oxlint 是基于 Rust 的高性能 Lint 工具，替代 ESLint。
+> Prettier 负责代码格式化，通过 VS Code 扩展 `esbenp.prettier-vscode` 实现保存时自动格式化。
 
 ### 10.2 oxlint 配置
 
@@ -723,8 +724,8 @@ declare module "*.svg?react" {
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "lint": "oxlint src/",
-    "format": "oxfmt --write src/",
-    "format:check": "oxfmt --check src/",
+    "format": "prettier --write \"src/**/*.{ts,tsx,css,less,json}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx,css,less,json}\"",
     "type-check": "tsc --noEmit"
   }
 }
@@ -753,13 +754,8 @@ insert_final_newline = true
 // .vscode/settings.json
 {
   "editor.formatOnSave": true,
-  "editor.defaultFormatter": null,
-  "[typescript]": {
-    "editor.defaultFormatter": "oxc.oxc-vscode"
-  },
-  "[typescriptreact]": {
-    "editor.defaultFormatter": "oxc.oxc-vscode"
-  }
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "typescript.tsdk": "node_modules/typescript/lib"
 }
 ```
 
@@ -838,7 +834,7 @@ dist/
   "lint-staged": {
     "src/**/*.{ts,tsx}": [
       "oxlint",
-      "oxfmt --write"
+      "prettier --write"
     ]
   }
 }
@@ -1180,6 +1176,8 @@ steps:
 | `tsconfig.json` | TypeScript 配置 | 是 |
 | `vite.config.ts` | Vite 构建配置 | 是 |
 | `oxlintrc.json` | oxlint 规则 | 是 |
+| `.prettierrc` | Prettier 格式化规则 | 是 |
+| `.prettierignore` | Prettier 忽略文件 | 是 |
 | `.editorconfig` | 编辑器通用格式 | 是 |
 | `.gitignore` | Git 忽略规则 | 是 |
 | `.env` / `.env.*` | 环境变量 | 是 |
