@@ -1112,13 +1112,19 @@ export function MyComponent({ items, selectedId, onSelect }: MyComponentProps) {
 |----|---------|
 | react | 19.x |
 | react-dom | 19.x |
-| typescript | 5.x |
+| typescript | 5.8+ |
 | vite | 6.x |
+| @vitejs/plugin-react | 4.x |
 | antd | 5.x |
+| @ant-design/icons | 5.x |
 | tailwindcss | 4.x |
 | react-router-dom | 6.x |
 | zustand | 5.x |
 | axios | 1.x |
+| clsx | 2.x |
+| less | 4.x |
+| vite-plugin-svgr | 5.x |
+| oxlint | 1.x |
 
 ---
 
