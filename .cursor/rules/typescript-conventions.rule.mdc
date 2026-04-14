@@ -40,6 +40,24 @@ export function UserCard({ user, isSelected, onSelect }: UserCardProps) {
 }
 ```
 
+## 纯展示组件 memo 包裹
+
+纯展示组件（只依赖 props、不调用业务 Hook）**必须用 `memo` 包裹**，避免父组件状态变化时触发无意义的重渲染。`memo()` 内使用具名函数，不用匿名箭头函数：
+
+```tsx
+import { memo } from "react";
+
+export type StatusBadgeProps = {
+  status: "active" | "closed";
+};
+
+export const StatusBadge = memo(function StatusBadge({ status }: StatusBadgeProps) {
+  return <span>{status}</span>;
+});
+```
+
+> 详见 `react-performance.rule.mdc`。
+
 ## 命名规范
 
 | 类型 | 风格 | 示例 |
