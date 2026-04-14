@@ -1046,9 +1046,11 @@ import type { User } from "./types";
 
 ### 14.3 组件编写规范
 
+**区域组件 / 页面入口**（普通命名导出）：
+
 ```tsx
 // 1. 导入
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import type { SomeType } from "./types";
 
 // 2. Props 类型定义（export）
@@ -1063,10 +1065,10 @@ export function MyComponent({ items, selectedId, onSelect }: MyComponentProps) {
   // 3.1 Hooks 调用
   const [localState, setLocalState] = useState("");
 
-  // 3.2 派生数据
-  const filteredItems = items.filter(/* ... */);
+  // 3.2 派生数据（useMemo 保持引用稳定）
+  const filteredItems = useMemo(() => items.filter(/* ... */), [items]);
 
-  // 3.3 事件处理
+  // 3.3 事件处理（useCallback 防止 memo 子组件重渲染）
   const handleClick = useCallback((id: string) => {
     onSelect(id);
   }, [onSelect]);
@@ -1075,13 +1077,30 @@ export function MyComponent({ items, selectedId, onSelect }: MyComponentProps) {
   return (
     <div>
       {filteredItems.map((item) => (
-        <div key={item.id} onClick={() => handleClick(item.id)}>
-          {item.name}
-        </div>
+        <ItemCard key={item.id} item={item} onSelect={handleClick} />
       ))}
     </div>
   );
 }
+```
+
+**纯展示组件**（必须用 `memo` 包裹）：
+
+```tsx
+import { memo } from "react";
+
+export type ItemCardProps = {
+  item: SomeType;
+  onSelect: (id: string) => void;
+};
+
+export const ItemCard = memo(function ItemCard({ item, onSelect }: ItemCardProps) {
+  return (
+    <div onClick={() => onSelect(item.id)}>
+      {item.name}
+    </div>
+  );
+});
 ```
 
 ### 14.4 禁止事项
@@ -1094,6 +1113,69 @@ export function MyComponent({ items, selectedId, onSelect }: MyComponentProps) {
 | `useEffect` 做数据获取（新代码） | 竞态风险、清理复杂 | 封装在业务 Hook 中统一管理 |
 | 在组件中直接 `localStorage.setItem` | 副作用散落 | 封装到 `utils/storage.ts` 或 Zustand persist |
 | 魔法数字 / 魔法字符串 | 可读性差 | 提取为命名常量 |
+
+### 14.5 渲染性能优化
+
+> 详见 `.cursor/rules/react-performance.rule.mdc`，此处仅做概要。
+
+React 默认行为：父组件重渲染时，所有子组件也会重渲染，即使 props 没有变化。在列表渲染、多区域联动等场景中，这会累积成明显的页面卡顿。
+
+#### React.memo
+
+| 场景 | 是否使用 memo |
+|------|-------------|
+| 纯展示组件（只依赖 props 渲染） | **必须** |
+| 列表项组件（在 `.map()` 中渲染） | **必须** |
+| 高频更新父组件下的子组件 | **必须** |
+| 页面入口组件 | 不需要 |
+| 非常轻量的组件（1-2 个 DOM 节点） | 不需要 |
+
+```tsx
+import { memo } from "react";
+
+export const UserCard = memo(function UserCard({ user, onClick }: UserCardProps) {
+  return <div onClick={onClick}>{user.name}</div>;
+});
+```
+
+#### useCallback
+
+传给 `memo` 子组件的回调 **必须** 用 `useCallback` 包裹，否则 `memo` 无效（每次渲染创建新函数引用）：
+
+```tsx
+const handleSelect = useCallback((id: string) => {
+  setSelectedId(id);
+}, []);
+```
+
+#### useMemo
+
+传给 `memo` 子组件的派生对象/数组、大列表排序/过滤 **必须** 用 `useMemo`：
+
+```tsx
+const filteredList = useMemo(
+  () => items.filter((item) => item.status === activeStatus),
+  [items, activeStatus],
+);
+```
+
+#### memo + useCallback 成对使用
+
+| 层 | memo | useCallback | useMemo |
+|----|------|-------------|---------|
+| 页面入口 | 不需要 | **必须**：传给子组件的回调 | **按需**：跨区域派生数据 |
+| 区域组件 | 按需 | **必须**：传给 memo 子组件的回调 | **按需**：排序/过滤 |
+| 业务 Hook | — | **必须**：返回的 action 函数 | 按需 |
+| 纯展示组件 | **必须** | 不需要 | 不需要 |
+
+#### 常见问题
+
+| 问题 | 原因 | 修正 |
+|------|------|------|
+| 用了 memo 子组件还是重渲染 | 传了内联对象/函数作 props | 用 `useCallback` / `useMemo` 包裹 |
+| 列表滚动/操作卡顿 | 列表项组件未 memo | 列表项统一 memo，回调用 `useCallback` |
+| 搜索框输入卡顿 | 输入触发整页重渲染 | 重型子组件用 memo 隔离 |
+| `.map()` 中的内联函数 | 每个 item 的回调引用都是新的 | 回调接收 id，子组件内部 `onClick={() => onSelect(item.id)}` |
 
 ---
 
@@ -1116,10 +1198,10 @@ export function MyComponent({ items, selectedId, onSelect }: MyComponentProps) {
 
 | 层 | 文件位置 | 核心职责 |
 |---|---|---|
-| 页面入口 | `pages/<Name>/index.tsx` | 编排组件、管理跨区域共享状态 |
+| 页面入口 | `pages/<Name>/index.tsx` | 编排组件、管理跨区域共享状态、`useCallback`/`useMemo` 保持引用稳定 |
 | 区域组件 | `pages/<Name>/components/<Region>Panel.tsx` | 区域内部 UI 自治，通过 props 回调对外通信 |
-| 业务 Hooks | `pages/<Name>/hooks/use<Domain>.ts` | API 调用、数据状态、业务计算，返回 state + actions |
-| 纯展示组件 | `pages/<Name>/components/<Widget>View.tsx` | 只接收 props，不调用 API/Hook |
+| 业务 Hooks | `pages/<Name>/hooks/use<Domain>.ts` | API 调用、数据状态、业务计算，返回 state + actions（action 用 `useCallback`） |
+| 纯展示组件 | `pages/<Name>/components/<Widget>View.tsx` | 只接收 props，不调用 API/Hook，**必须 `memo` 包裹** |
 
 ### 何时使用全局 Store vs 页面 Hook
 

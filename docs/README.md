@@ -16,6 +16,7 @@
 | `.cursor/rules/api-services.rule.mdc` | API 请求层与模块组织 |
 | `.cursor/rules/zustand-stores.rule.mdc` | Zustand 全局状态管理 |
 | `.cursor/rules/routing.rule.mdc` | React Router 路由规则 |
+| `.cursor/rules/react-performance.rule.mdc` | React 渲染性能优化（memo / useCallback / useMemo） |
 | `.cursor/rules/svg-icons.rule.mdc` | SVG 图标管理（按需生效） |
 
 ### Cursor Skills（按需触发的工作流）
