@@ -1,7 +1,7 @@
 # 工程化配置与开发约定
 
 > 本文档梳理项目从 0 到 1 需要建立的**工程化配置**和**开发约定**。  
-> 技术栈：React 19 + TypeScript / Vite + pnpm / Ant Design 6.x / Tailwind CSS v4 + Less (CSS Modules) / React Router DOM v6 / Zustand / Axios / oxlint + Prettier / vite-plugin-svgr
+> 技术栈：React 19 + TypeScript / Vite + pnpm / Ant Design / Tailwind CSS v4 + Less (CSS Modules) / React Router DOM v6 / Zustand / Axios / oxlint + Prettier / vite-plugin-svgr
 
 ---
 
@@ -1165,7 +1165,7 @@ export function MyComponent({ items, selectedId, onSelect }: MyComponentProps) {
 | vite | 6.x |
 | @vitejs/plugin-react | 4.x |
 | antd | 6.x |
-| @ant-design/icons | 6.x（与 antd 主版本配套升级） |
+| @ant-design/icons | 6.x |
 | tailwindcss | 4.x |
 | react-router-dom | 6.x |
 | zustand | 5.x |
