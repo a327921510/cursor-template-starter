@@ -15,7 +15,7 @@ alwaysApply: true
 
 | 约定 | 说明 |
 |------|------|
-| 路由路径 | kebab-case：`/api-dashboard`、`/user-management` |
+| 路由路径 | kebab-case：`/dashboard`、`/user-management` |
 | 页面懒加载 | 所有页面组件使用 `React.lazy(() => import(...))` |
 | 页面导出 | 命名导出 `export function XxxPage()` + 默认导出 `export default XxxPage` |
 | 嵌套路由 | 布局组件使用 `<Outlet />` 渲染子路由 |

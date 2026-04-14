@@ -462,7 +462,7 @@ export function AppRouter() {
 
 | 约定 | 说明 |
 |------|------|
-| 路由路径 | kebab-case（`/api-dashboard`） |
+| 路由路径 | kebab-case（`/dashboard`） |
 | 懒加载 | 所有页面组件使用 `React.lazy()` + `Suspense` |
 | 页面默认导出 | 页面入口文件 `index.tsx` 使用**命名导出 + 默认导出**双导出 |
 | 嵌套路由 | 布局组件使用 `<Outlet />` 渲染子路由 |
