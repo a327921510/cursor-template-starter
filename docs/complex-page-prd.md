@@ -626,8 +626,8 @@ export function ApiDashboardPage() {
 
 ### 7.1 技术栈
 
-- React 18+ (TypeScript)
-- UI 框架：Ant Design 5.x
+- React 19+ (TypeScript，与模板工程一致)
+- UI 框架：Ant Design 6.x
 - 图表：ECharts 或 Recharts
 - 表格虚拟滚动：`@tanstack/react-virtual` 或 Ant Design Table 内置
 - 状态管理：页面级 hooks（遵循四层架构），不引入全局状态管理

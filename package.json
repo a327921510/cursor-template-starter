@@ -16,8 +16,8 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@ant-design/icons": "^5.6.1",
-    "antd": "^5.29.3",
+    "@ant-design/icons": "^6.1.1",
+    "antd": "^6.3.5",
     "axios": "^1.15.0",
     "clsx": "^2.1.1",
     "react": "^19.2.5",

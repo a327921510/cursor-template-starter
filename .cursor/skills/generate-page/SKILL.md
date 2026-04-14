@@ -116,7 +116,7 @@ src/pages/<PageName>/
 - Props 类型与组件同文件，使用 `type` 定义并 `export`
 - `useCallback` / `useMemo` 用于：传给子组件的回调、昂贵计算
 - 注释只在不明显的地方写，不写废话注释
-- UI 库按项目实际情况选择（Ant Design / MUI / shadcn/ui 等），生成时询问或根据 package.json 推断
+- UI 库按项目实际情况选择（本项目为 **Ant Design 6.x** + `@ant-design/icons` v6；其他栈如 MUI / shadcn/ui 等则生成时询问或根据 package.json 的 `antd` 主版本推断）
 
 ---
 

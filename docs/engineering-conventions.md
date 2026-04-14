@@ -1,7 +1,7 @@
 # 工程化配置与开发约定
 
 > 本文档梳理项目从 0 到 1 需要建立的**工程化配置**和**开发约定**。  
-> 技术栈：React 19 + TypeScript / Vite + pnpm / Ant Design / Tailwind CSS v4 + Less (CSS Modules) / React Router DOM v6 / Zustand / Axios / oxlint + Prettier / vite-plugin-svgr
+> 技术栈：React 19 + TypeScript / Vite + pnpm / Ant Design 6.x / Tailwind CSS v4 + Less (CSS Modules) / React Router DOM v6 / Zustand / Axios / oxlint + Prettier / vite-plugin-svgr
 
 ---
 
@@ -366,6 +366,8 @@ function Card({ active }: { active: boolean }) {
 > 安装 `clsx` 用于组合类名：`pnpm add clsx`
 
 ### 5.5 Ant Design 主题
+
+Ant Design 6.x 默认以 **CSS 变量** 驱动主题，目标环境需为支持 CSS 变量的现代浏览器；从 v5 升级时需将 `@ant-design/icons` 一并升到 v6（与 `antd` 主版本对齐）。Modal、Drawer 等浮层的遮罩在 v6 默认带 **模糊** 效果，若不需要可在根 `ConfigProvider` 上通过 `modal`、`drawer` 的 `mask.blur` 关闭。详见官方文档：[From v5 to v6](https://ant.design/docs/react/migration-v6)。
 
 ```tsx
 // src/styles/antd-theme.ts
@@ -1162,8 +1164,8 @@ export function MyComponent({ items, selectedId, onSelect }: MyComponentProps) {
 | typescript | 5.8+ |
 | vite | 6.x |
 | @vitejs/plugin-react | 4.x |
-| antd | 5.x |
-| @ant-design/icons | 5.x |
+| antd | 6.x |
+| @ant-design/icons | 6.x（与 antd 主版本配套升级） |
 | tailwindcss | 4.x |
 | react-router-dom | 6.x |
 | zustand | 5.x |
@@ -1191,7 +1193,7 @@ pnpm build
 |--------|---------|
 | 代码分割 | Vite `manualChunks` 分离 vendor/antd |
 | 懒加载 | 路由级 `React.lazy()` |
-| Tree-shaking | Ant Design v5 默认支持，无需额外配置 |
+| Tree-shaking | Ant Design v6 默认支持，无需额外配置 |
 | 资源压缩 | Vite 生产模式默认 minify |
 | gzip/brotli | 通过 `vite-plugin-compression` 或 Nginx 配置 |
 

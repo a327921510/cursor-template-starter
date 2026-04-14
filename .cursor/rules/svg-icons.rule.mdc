@@ -31,5 +31,5 @@ import ArrowLeftIcon from "@/assets/icons/arrow-left.svg?react";
 
 ## 与 Ant Design 图标的分工
 
-- 优先使用 `@ant-design/icons` 提供的图标
+- 优先使用 `@ant-design/icons`（**v6**，与 `antd@6` 配套）提供的图标
 - 只有自定义图标（产品特有、品牌 logo 等）才放 `assets/icons/`
