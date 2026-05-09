@@ -6,27 +6,33 @@
 
 ## 文件清单
 
-### Cursor Rules（始终生效的约束）
+### Cursor Rules
 
-| 文件 | 说明 |
-|------|------|
-| `.cursor/rules/page-layering.rule.mdc` | 页面四层架构（入口/区域/Hook/展示） |
-| `.cursor/rules/typescript-conventions.rule.mdc` | TypeScript 编码规范（类型、命名、导入顺序） |
-| `.cursor/rules/styling.rule.mdc` | 样式分工（Tailwind + Less CSS Modules + Ant Design） |
-| `.cursor/rules/api-services.rule.mdc` | API 请求层与模块组织 |
-| `.cursor/rules/zustand-stores.rule.mdc` | Zustand 全局状态管理 |
-| `.cursor/rules/routing.rule.mdc` | React Router 路由规则 |
-| `.cursor/rules/react-performance.rule.mdc` | React 渲染性能优化（memo / useCallback / useMemo） |
-| `.cursor/rules/svg-icons.rule.mdc` | SVG 图标管理（按需生效） |
+加载策略详见 `.cursor/rules/README.md`。当前 4 条 always-on，6 条按 glob 触发。
 
-### Cursor Skills（按需触发的工作流）
+| 文件 | 加载 | 说明 |
+|------|------|------|
+| `.cursor/rules/workflow.rule.mdc` | always | 标准开发流程 + 提交前自检清单 |
+| `.cursor/rules/auto-routing.rule.mdc` | always | 关键词 → skill / workflow 自动路由 |
+| `.cursor/rules/typescript-conventions.rule.mdc` | always | TypeScript 编码规范（类型、命名、导入顺序） |
+| `.cursor/rules/styling.rule.mdc` | always | 样式分工（Tailwind + Less CSS Modules + Ant Design） |
+| `.cursor/rules/page-layering.rule.mdc` | glob `src/pages/**` | 页面四层架构（入口 / 区域 / Hook / 展示） |
+| `.cursor/rules/react-performance.rule.mdc` | glob `src/**/*.{ts,tsx}` | React 渲染性能（memo / useCallback / useMemo） |
+| `.cursor/rules/routing.rule.mdc` | glob `src/router/**` | React Router v6 路由规则 |
+| `.cursor/rules/zustand-stores.rule.mdc` | glob `src/stores/**` | Zustand 全局状态管理 |
+| `.cursor/rules/api-services.rule.mdc` | glob `src/services/**` | API 请求层与模块组织 |
+| `.cursor/rules/svg-icons.rule.mdc` | glob `*.svg` | SVG 图标管理 |
 
-| Skill | 触发场景 |
-|-------|---------|
-| `generate-page` | 生成四层架构页面脚手架 |
-| `add-api-module` | 新建 API 服务模块 |
-| `add-zustand-store` | 新建 Zustand 全局 Store |
-| `add-route` | 注册新路由 + 创建页面入口 |
+### Cursor Skills
+
+触发与维护详见 `.cursor/skills/README.md`。
+
+| Skill | 触发场景 | 深度参考 |
+|-------|---------|---------|
+| `generate-page` | 生成四层架构页面脚手架 | `references/page-layering-guide.md`、`references/react-performance-guide.md` |
+| `add-api-module` | 新建 API 服务模块 | — |
+| `add-zustand-store` | 新建 Zustand 全局 Store | — |
+| `add-route` | 注册新路由 + 创建页面入口 | — |
 
 ### 文档
 
