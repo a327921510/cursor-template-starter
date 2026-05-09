@@ -1,6 +1,8 @@
 ---
 description: Axios 请求层与 API 模块组织规则
-alwaysApply: true
+globs:
+  - "src/services/**/*.{ts,tsx}"
+alwaysApply: false
 ---
 
 # API 请求层规则

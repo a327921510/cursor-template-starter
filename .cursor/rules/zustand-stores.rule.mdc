@@ -1,6 +1,8 @@
 ---
 description: Zustand 全局状态管理规则
-alwaysApply: true
+globs:
+  - "src/stores/**/*.{ts,tsx}"
+alwaysApply: false
 ---
 
 # Zustand Store 规则
