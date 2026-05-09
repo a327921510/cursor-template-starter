@@ -8,7 +8,7 @@
 
 ### Cursor Rules
 
-加载策略详见 `.cursor/rules/README.md`。当前 5 条 always-on，8 条按 glob 触发。
+加载策略详见 `.cursor/rules/README.md`。当前 5 条 always-on，9 条按 glob 触发。
 
 | 文件 | 加载 | 说明 |
 |------|------|------|
@@ -21,6 +21,7 @@
 | `.cursor/rules/react-performance.rule.mdc` | glob `src/**/*.{ts,tsx}` | React 渲染性能（memo / useCallback / useMemo） |
 | `.cursor/rules/data-fetching.rule.mdc` | glob `src/pages/**/hooks` | 业务 Hook 三态契约 / 请求取消 / 乐观更新 |
 | `.cursor/rules/forms.rule.mdc` | glob `src/pages/**` | antd Form 统一范式 / 提交态 / 校验 |
+| `.cursor/rules/accessibility.rule.mdc` | glob `src/**/*.tsx` | a11y 基线（语义化 / 键盘 / ARIA / 焦点 / 对比度） |
 | `.cursor/rules/routing.rule.mdc` | glob `src/router/**` | React Router v6 路由规则 |
 | `.cursor/rules/zustand-stores.rule.mdc` | glob `src/stores/**` | Zustand 全局状态管理 |
 | `.cursor/rules/api-services.rule.mdc` | glob `src/services/**` | API 请求层与模块组织 |
