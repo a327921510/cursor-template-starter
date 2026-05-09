@@ -10,14 +10,17 @@
 | `auto-routing.rule.mdc` | **always** | 每个回合 | 关键词 → skill / workflow 路由 |
 | `typescript-conventions.rule.mdc` | **always** | 每个回合 | TS 编码规范、命名、导入顺序 |
 | `styling.rule.mdc` | **always** | 每个回合 | Tailwind / Less Modules / antd 主题三层分工 |
+| `error-handling.rule.mdc` | **always** | 每个回合 | 错误责任边界、Result 模式、`App.useApp()` 用法 |
 | `page-layering.rule.mdc` | glob | `src/pages/**`、`src/router/routes.tsx` | 页面四层架构职责与反模式 |
 | `react-performance.rule.mdc` | glob | `src/**/*.{ts,tsx}` | memo / useCallback / useMemo 决策 |
+| `data-fetching.rule.mdc` | glob | `src/pages/**/hooks/use*`、`src/services/**` | 业务 Hook 三态契约、取消、乐观更新 |
+| `forms.rule.mdc` | glob | `src/pages/**`、`src/components/**` | antd Form 统一范式、提交态、校验 |
 | `routing.rule.mdc` | glob | `src/router/**`、页面入口、`App.tsx` | React Router v6 数据路由约定 |
 | `zustand-stores.rule.mdc` | glob | `src/stores/**` | 全局状态边界、selector 订阅 |
 | `api-services.rule.mdc` | glob | `src/services/**` | Axios 实例与 API 模块组织 |
 | `svg-icons.rule.mdc` | glob | `src/assets/icons/**`、`*.svg` | SVG 作为 React 组件导入 |
 
-> **设计原则**：only what's truly project-wide should be always-on。当前 4 条 always-on 总体积 ~6KB，其余 6 条按 glob 触发，把固定上下文开销控制在最小。
+> **设计原则**：only what's truly project-wide should be always-on。当前 5 条 always-on 总体积 ~10KB，其余 8 条按 glob 触发，把固定上下文开销控制在最小。
 
 ## 文件命名
 
