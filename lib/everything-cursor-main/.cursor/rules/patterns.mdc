@@ -1,0 +1,50 @@
+---
+description: Design patterns for services, APIs, and data access layers
+globs: "**/services/**, **/api/**, **/repositories/**, **/handlers/**, **/controllers/**"
+alwaysApply: false
+---
+
+# Design Patterns
+
+## API Response Envelope (mandatory for all endpoints)
+
+```typescript
+// Success
+{ success: true, data: T, meta?: { page, pageSize, total } }
+
+// Error
+{ success: false, error: { code: string, message: string, details?: unknown } }
+```
+
+## Result Type (for service-layer expected failures)
+
+```typescript
+type Result<T, E = string> =
+  | { success: true; data: T }
+  | { success: false; error: E }
+
+// Use Result for: not-found, validation, business rule violations
+// Use exceptions for: bugs, infra failures, unexpected errors
+```
+
+## Repository Pattern
+
+```typescript
+interface Repository<T> {
+  findById(id: string): Promise<T | null>
+  findAll(filter?: Partial<T>): Promise<T[]>
+  create(data: Omit<T, 'id' | 'createdAt'>): Promise<T>
+  update(id: string, data: Partial<T>): Promise<T>
+  delete(id: string): Promise<void>
+}
+```
+
+## Layered Architecture
+
+```
+Handler (HTTP) → Service (Business Logic) → Repository (Data Access)
+
+Handler: parse request, validate input, format response. NO business logic.
+Service: orchestrate operations, enforce rules, transaction boundaries. NO HTTP.
+Repository: single-entity CRUD, query construction. NO business rules.
+```

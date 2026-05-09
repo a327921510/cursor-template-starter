@@ -1,0 +1,54 @@
+---
+description: TDD workflow and testing guidelines — activated when working with test files
+globs: "**/*.test.{ts,tsx,js,jsx}, **/*.spec.{ts,tsx,js,jsx}, **/__tests__/**, **/test/**, **/tests/**"
+alwaysApply: false
+---
+
+# Testing Rules
+
+## TDD Protocol
+
+```
+RED → GREEN → REFACTOR — no exceptions
+```
+
+1. Define interfaces/types FIRST (the contract)
+2. Write failing tests (must fail for the right reason)
+3. Implement MINIMAL code to pass
+4. Verify all tests GREEN
+5. Refactor while keeping tests green
+6. Check coverage ≥ 80%
+
+## Test Structure: Arrange-Act-Assert
+
+```typescript
+describe('[Module]', () => {
+  describe('[method]', () => {
+    it('[expected behavior in plain English]', async () => {
+      // Arrange — set up test data and mocks
+      // Act — call the function under test (ONE call)
+      // Assert — verify the outcome
+    })
+  })
+})
+```
+
+## Coverage Targets
+
+| Area | Target | Rationale |
+|------|--------|-----------|
+| Business logic (services) | 100% | Core value, must be correct |
+| Utilities / helpers | ≥ 90% | Widely reused, high leverage |
+| API handlers | ≥ 80% | Integration tests cover happy + error paths |
+| UI components | ≥ 70% | Focus on interactions, not visual layout |
+| Overall | ≥ 80% | Baseline confidence |
+
+## Mandatory Rules
+
+- Every bug fix MUST include a regression test
+- Tests MUST be independent (no shared mutable state)
+- Test BEHAVIOR, not implementation details
+- Mock external dependencies, use real logic for your code
+- No `any` in test files — test types matter too
+- No `test.skip` or `describe.skip` in committed code
+- Flaky tests are bugs — fix or delete, never ignore

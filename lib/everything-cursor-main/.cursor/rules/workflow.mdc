@@ -1,0 +1,33 @@
+---
+description: Development workflow — the standard process for all code changes
+globs: 
+alwaysApply: true
+---
+
+# Development Workflow
+
+## Standard Process
+
+| Task Type | Workflow |
+|-----------|----------|
+| New feature | Plan → Define types → TDD → Self-review → PR |
+| Bug fix | Reproduce with test → Fix → Verify → Regression test → PR |
+| Refactor | Ensure tests pass → Incremental changes → Test after each → PR |
+| API endpoint | Types → Integration tests → Handler → Validation → Docs → PR |
+| UI component | Props interface → Unit tests → Implement → Accessibility check → PR |
+
+## Before Writing Code
+
+1. **Clarify** — What exactly needs to be built? What are the acceptance criteria?
+2. **Break down** — Split into tasks completable in 1-4 hours
+3. **Assess risk** — Security implications? Performance concerns? Breaking changes?
+
+## Self-Review Checklist (before every PR)
+
+```
+Security:    □ No secrets  □ Input validated  □ No injection vectors
+Quality:     □ Functions ≤50 lines  □ Files ≤800 lines  □ Errors handled
+Testing:     □ Tests included  □ Edge cases covered  □ Coverage ≥80%
+Style:       □ Immutable patterns  □ No any  □ No console.log
+Docs:        □ JSDoc updated  □ README updated if needed  □ CHANGELOG entry
+```

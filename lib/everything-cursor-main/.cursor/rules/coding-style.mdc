@@ -1,0 +1,153 @@
+---
+description: Code style guidelines - immutability, file organization, naming conventions
+globs: 
+alwaysApply: true
+---
+
+# Coding Style Guidelines
+
+## Core Principles
+
+### 1. Immutability
+
+NEVER mutate, ALWAYS create new:
+
+```typescript
+// Arrays
+const added = [...items, newItem]
+const removed = items.filter(i => i.id !== id)
+const updated = items.map(i => i.id === id ? { ...i, ...changes } : i)
+
+// Objects
+const updated = { ...user, name: newName }
+const nested = { ...obj, nested: { ...obj.nested, value: newValue } }
+```
+
+### 2. Small Functions
+
+Keep functions under 50 lines:
+
+```typescript
+// BAD: Large function doing multiple things
+function processOrder(order) {
+  // 100+ lines of code...
+}
+
+// GOOD: Split into focused functions
+function validateOrder(order: Order): ValidationResult { }
+function calculateTotal(items: Item[]): number { }
+function applyDiscounts(total: number, discounts: Discount[]): number { }
+function createInvoice(order: Order, total: number): Invoice { }
+```
+
+### 3. Small Files
+
+Keep files under 800 lines:
+
+```
+src/
+├── features/
+│   └── checkout/
+│       ├── components/
+│       │   ├── CartItem.tsx       # ~100 lines
+│       │   ├── CartSummary.tsx    # ~80 lines
+│       │   └── CheckoutForm.tsx   # ~150 lines
+│       ├── hooks/
+│       │   └── useCheckout.ts     # ~50 lines
+│       └── services/
+│           └── checkout.ts        # ~100 lines
+```
+
+### 4. Explicit Types
+
+No implicit `any`:
+
+```typescript
+// BAD
+function process(data) {
+  return data.map(item => item.value)
+}
+
+// GOOD
+function process(data: DataItem[]): string[] {
+  return data.map(item => item.value)
+}
+```
+
+### 5. Error Handling
+
+Always handle errors:
+
+```typescript
+async function fetchUser(id: string): Promise<Result<User>> {
+  try {
+    const user = await db.users.findUnique({ where: { id } })
+    if (!user) {
+      return { success: false, error: 'User not found' }
+    }
+    return { success: true, data: user }
+  } catch (error) {
+    console.error('Failed to fetch user:', error)
+    return { success: false, error: 'Failed to fetch user' }
+  }
+}
+```
+
+## Code Review Checklist
+
+### Structure
+- [ ] Functions < 50 lines
+- [ ] Files < 800 lines
+- [ ] No deep nesting (> 4 levels)
+- [ ] Single responsibility
+
+### Quality
+- [ ] Explicit types (no `any`)
+- [ ] Immutable patterns
+- [ ] Error handling present
+- [ ] Input validation
+
+### Style
+- [ ] Consistent naming
+- [ ] No magic numbers
+- [ ] No commented code
+- [ ] No console.log
+
+## Naming Conventions
+
+```typescript
+// Variables and functions: camelCase
+const userName = 'John'
+function getUserById(id: string) { }
+
+// Types and interfaces: PascalCase
+interface User { }
+type UserRole = 'admin' | 'user'
+
+// Constants: SCREAMING_SNAKE_CASE
+const MAX_RETRIES = 3
+const API_BASE_URL = 'https://api.example.com'
+
+// Files: kebab-case or PascalCase
+// user-service.ts or UserService.ts
+// Button.tsx (React components)
+```
+
+## Validation Pattern
+
+```typescript
+import { z } from 'zod'
+
+const CreateUserSchema = z.object({
+  email: z.string().email('Invalid email'),
+  name: z.string().min(1, 'Name required').max(100),
+  age: z.number().int().min(0).max(150).optional()
+})
+
+type CreateUserInput = z.infer<typeof CreateUserSchema>
+
+function createUser(input: unknown) {
+  const validated = CreateUserSchema.parse(input)
+  return db.users.create({ data: validated })
+}
+```
