@@ -38,6 +38,17 @@
 | `add-zustand-store` | 新建 Zustand 全局 Store | — |
 | `add-route` | 注册新路由 + 创建页面入口 | — |
 
+### Cursor Commands
+
+触发与维护详见 `.cursor/commands/README.md`。用户在对话中显式输入 `/<name>` 即可触发，每个命令都有强制的输出格式。
+
+| 命令 | 一句话 | 主要参考 rule |
+|------|------|------|
+| `/code-review` | 按 14 条 rule 做分级代码评审 | 全部 rules |
+| `/refactor-page` | 把超限页面拆到四层架构 | page-layering / react-performance / accessibility |
+| `/a11y-audit` | 按九个维度做 a11y 体检 | accessibility |
+| `/perf-audit` | React 重渲染性能体检 | react-performance |
+
 ### 文档
 
 | 文件 | 说明 |
