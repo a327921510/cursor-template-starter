@@ -34,6 +34,17 @@ alwaysApply: true
                                      □ 列表项 .map() 不传内联函数
 状态:    □ 页面级状态没塞进 zustand   □ store 用 selector 订阅
 API:     □ 没有直接 import axios     □ 业务逻辑不在 API 模块里
+数据:    □ 业务 Hook 暴露 data/loading/error/refetch 标准字段
+         □ 三态 UI 都有处理（loading / error / empty）
+         □ 列表筛选场景配了 AbortSignal 取消
+表单:    □ 用 antd Form 而非 useState 管表单状态
+         □ submitting 在 finally 里复位
+         □ 编辑场景用 key 重置 form 而非 setFieldsValue
+错误:    □ message/notification 用 App.useApp() 而非静态方法
+         □ 业务 Hook 没直接弹 toast      □ catch 不吞错
+a11y:    □ 可点击元素是 button/a 而非 div/span
+         □ 图标按钮有 aria-label        □ 弹窗关闭后焦点回到触发元素
+         □ 状态不只靠颜色传达           □ placeholder 没替代 label
 注释:    □ 没有"自我解释"的废话注释   □ 不在代码里写 TODO 而不跟踪
 ```
 
