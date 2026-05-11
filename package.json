@@ -20,6 +20,7 @@
     "antd": "^6.3.5",
     "axios": "^1.15.0",
     "clsx": "^2.1.1",
+    "es-toolkit": "^1.46.1",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
     "react-router-dom": "^6.30.3",
