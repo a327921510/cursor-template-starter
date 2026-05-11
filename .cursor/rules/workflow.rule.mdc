@@ -45,6 +45,9 @@ API:     □ 没有直接 import axios     □ 业务逻辑不在 API 模块里
 a11y:    □ 可点击元素是 button/a 而非 div/span
          □ 图标按钮有 aria-label        □ 弹窗关闭后焦点回到触发元素
          □ 状态不只靠颜色传达           □ placeholder 没替代 label
+工具:    □ 通用工具优先用 es-toolkit 而非自己写
+         □ 没有 import lodash / es-toolkit/compat
+         □ 自实现工具放在 src/utils/<domain>.ts 且为纯函数
 注释:    □ 没有"自我解释"的废话注释   □ 不在代码里写 TODO 而不跟踪
 ```
 
