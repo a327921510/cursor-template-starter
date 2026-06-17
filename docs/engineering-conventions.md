@@ -1,7 +1,7 @@
 # 工程化配置与开发约定
 
 > 本文档梳理项目从 0 到 1 需要建立的**工程化配置**和**开发约定**。  
-> 技术栈：React 19 + TypeScript / Vite + pnpm / Ant Design / Tailwind CSS v4 + Less (CSS Modules) / React Router DOM v6 / Zustand / Axios / oxlint + oxfmt / vite-plugin-svgr
+> 技术栈：React 19 + TypeScript / Vite + pnpm / Ant Design / Tailwind CSS v4 + Less (CSS Modules) / React Router DOM v6 / Zustand / Axios / oxlint + Prettier / vite-plugin-svgr
 
 ---
 
@@ -34,20 +34,20 @@
 
 | 项目 | 约定 |
 |------|------|
-| Node 版本 | ≥ 20 LTS，`.node-version` 或 `.nvmrc` 锁定 |
-| 包管理器 | pnpm ≥ 9，`package.json` 中配置 `"packageManager"` 字段 |
+| Node 版本 | ≥ 20 LTS，`.node-version` 锁定 |
+| 包管理器 | pnpm（不锁定具体版本，兼容 8/9/10） |
 | 锁文件 | 只允许 `pnpm-lock.yaml`，`.npmrc` 中设置 `engine-strict=true` |
 
 ```jsonc
 // package.json (片段)
 {
-  "packageManager": "pnpm@9.15.0",
   "engines": {
-    "node": ">=20.0.0",
-    "pnpm": ">=9.0.0"
+    "node": ">=20.0.0"
   }
 }
 ```
+
+> 不设置 `packageManager` 字段和 `engines.pnpm`，避免团队成员 pnpm 版本不一致时被阻断。
 
 ```ini
 # .npmrc
@@ -100,8 +100,7 @@ src/
 │   └── variables.less       # Less 全局变量（如需）
 ├── types/                   # 全局类型定义
 │   ├── api.d.ts             # API 通用响应类型
-│   ├── global.d.ts          # 全局类型扩展
-│   └── vite-env.d.ts        # Vite 环境类型
+│   └── global.d.ts          # 全局类型扩展（SVG、CSS Modules）
 ├── utils/                   # 工具函数
 │   ├── format.ts
 │   ├── storage.ts
@@ -109,7 +108,7 @@ src/
 ├── constants/               # 全局常量
 ├── App.tsx                  # 根组件（挂载路由、全局 Provider）
 ├── main.tsx                 # 入口文件
-└── vite-env.d.ts
+└── vite-env.d.ts            # Vite 环境类型（ImportMetaEnv）
 ```
 
 ### 2.1 目录职责边界
@@ -126,9 +125,23 @@ src/
 
 ## 3. TypeScript 配置
 
-### 3.1 tsconfig.json
+### 3.1 项目引用（Project References）
+
+项目使用 TypeScript 项目引用，将应用代码和 Node 配置文件分开编译：
 
 ```jsonc
+// tsconfig.json — 根文件，仅做引用
+{
+  "files": [],
+  "references": [
+    { "path": "./tsconfig.app.json" },
+    { "path": "./tsconfig.node.json" }
+  ]
+}
+```
+
+```jsonc
+// tsconfig.app.json — 应用代码（src/）
 {
   "compilerOptions": {
     "target": "ES2020",
@@ -136,12 +149,16 @@ src/
     "module": "ESNext",
     "moduleResolution": "bundler",
     "jsx": "react-jsx",
+    "verbatimModuleSyntax": true,
 
     // 严格模式
     "strict": true,
     "noUncheckedIndexedAccess": true,
     "noImplicitOverride": true,
     "forceConsistentCasingInFileNames": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
 
     // 路径别名
     "baseUrl": ".",
@@ -149,12 +166,26 @@ src/
       "@/*": ["src/*"]
     },
 
-    // 输出
     "skipLibCheck": true,
-    "isolatedModules": true,
     "noEmit": true
   },
-  "include": ["src", "vite.config.ts"]
+  "include": ["src"]
+}
+```
+
+```jsonc
+// tsconfig.node.json — 构建配置文件（vite.config.ts 等）
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "verbatimModuleSyntax": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "noEmit": true
+  },
+  "include": ["vite.config.ts"]
 }
 ```
 
@@ -336,6 +367,8 @@ function Card({ active }: { active: boolean }) {
 
 ### 5.5 Ant Design 主题
 
+Ant Design 6.x 默认以 **CSS 变量** 驱动主题，目标环境需为支持 CSS 变量的现代浏览器；从 v5 升级时需将 `@ant-design/icons` 一并升到 v6（与 `antd` 主版本对齐）。Modal、Drawer 等浮层的遮罩在 v6 默认带 **模糊** 效果，若不需要可在根 `ConfigProvider` 上通过 `modal`、`drawer` 的 `mask.blur` 关闭。详见官方文档：[From v5 to v6](https://ant.design/docs/react/migration-v6)。
+
 ```tsx
 // src/styles/antd-theme.ts
 import type { ThemeConfig } from "antd";
@@ -429,7 +462,7 @@ export function AppRouter() {
 
 | 约定 | 说明 |
 |------|------|
-| 路由路径 | kebab-case（`/api-dashboard`） |
+| 路由路径 | kebab-case（`/dashboard`） |
 | 懒加载 | 所有页面组件使用 `React.lazy()` + `Suspense` |
 | 页面默认导出 | 页面入口文件 `index.tsx` 使用**命名导出 + 默认导出**双导出 |
 | 嵌套路由 | 布局组件使用 `<Outlet />` 渲染子路由 |
@@ -694,11 +727,30 @@ declare module "*.svg?react" {
 | 工具 | 用途 | 配置文件 |
 |------|------|---------|
 | oxlint | 代码检查（Lint） | `oxlintrc.json` |
-| oxfmt | 代码格式化（Format） | `oxfmt.json` 或命令行参数 |
+| Prettier | 代码格式化（Format） | `.prettierrc` |
 
-> oxlint 和 oxfmt 是基于 Rust 的高性能工具，替代 ESLint + Prettier。
+> oxlint 是基于 Rust 的高性能 Lint 工具，替代 ESLint。
+> Prettier 负责代码格式化，通过 VS Code 扩展 `esbenp.prettier-vscode` 实现保存时自动格式化。
 
-### 10.2 oxlint 配置
+### 10.2 Prettier 配置
+
+```jsonc
+// .prettierrc
+{
+  "semi": true,
+  "singleQuote": false,
+  "tabWidth": 2,
+  "trailingComma": "all",
+  "printWidth": 100,
+  "bracketSpacing": true,
+  "arrowParens": "always",
+  "endOfLine": "lf"
+}
+```
+
+同时配置 `.prettierignore` 排除 `dist`、`node_modules`、`pnpm-lock.yaml`。
+
+### 10.3 oxlint 配置
 
 ```jsonc
 // oxlintrc.json
@@ -714,7 +766,7 @@ declare module "*.svg?react" {
 }
 ```
 
-### 10.3 package.json scripts
+### 10.4 package.json scripts
 
 ```jsonc
 {
@@ -723,14 +775,14 @@ declare module "*.svg?react" {
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "lint": "oxlint src/",
-    "format": "oxfmt --write src/",
-    "format:check": "oxfmt --check src/",
+    "format": "prettier --write \"src/**/*.{ts,tsx,css,less,json}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx,css,less,json}\"",
     "type-check": "tsc --noEmit"
   }
 }
 ```
 
-### 10.4 编辑器集成
+### 10.5 编辑器集成
 
 - 统一使用 `.editorconfig`
 - VS Code / Cursor 推荐扩展放在 `.vscode/extensions.json`
@@ -753,13 +805,8 @@ insert_final_newline = true
 // .vscode/settings.json
 {
   "editor.formatOnSave": true,
-  "editor.defaultFormatter": null,
-  "[typescript]": {
-    "editor.defaultFormatter": "oxc.oxc-vscode"
-  },
-  "[typescriptreact]": {
-    "editor.defaultFormatter": "oxc.oxc-vscode"
-  }
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "typescript.tsdk": "node_modules/typescript/lib"
 }
 ```
 
@@ -838,7 +885,7 @@ dist/
   "lint-staged": {
     "src/**/*.{ts,tsx}": [
       "oxlint",
-      "oxfmt --write"
+      "prettier --write"
     ]
   }
 }
@@ -875,7 +922,7 @@ VITE_API_BASE_URL=/api
 ### 12.3 类型安全
 
 ```typescript
-// src/types/vite-env.d.ts
+// src/vite-env.d.ts
 /// <reference types="vite/client" />
 
 interface ImportMetaEnv {
@@ -887,6 +934,8 @@ interface ImportMeta {
   readonly env: ImportMetaEnv;
 }
 ```
+
+> 此文件放在 `src/vite-env.d.ts`（Vite 脚手架默认位置），而非 `src/types/` 目录下。
 
 ---
 
@@ -997,9 +1046,11 @@ import type { User } from "./types";
 
 ### 14.3 组件编写规范
 
+**区域组件 / 页面入口**（普通命名导出）：
+
 ```tsx
 // 1. 导入
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import type { SomeType } from "./types";
 
 // 2. Props 类型定义（export）
@@ -1014,10 +1065,10 @@ export function MyComponent({ items, selectedId, onSelect }: MyComponentProps) {
   // 3.1 Hooks 调用
   const [localState, setLocalState] = useState("");
 
-  // 3.2 派生数据
-  const filteredItems = items.filter(/* ... */);
+  // 3.2 派生数据（useMemo 保持引用稳定）
+  const filteredItems = useMemo(() => items.filter(/* ... */), [items]);
 
-  // 3.3 事件处理
+  // 3.3 事件处理（useCallback 防止 memo 子组件重渲染）
   const handleClick = useCallback((id: string) => {
     onSelect(id);
   }, [onSelect]);
@@ -1026,13 +1077,30 @@ export function MyComponent({ items, selectedId, onSelect }: MyComponentProps) {
   return (
     <div>
       {filteredItems.map((item) => (
-        <div key={item.id} onClick={() => handleClick(item.id)}>
-          {item.name}
-        </div>
+        <ItemCard key={item.id} item={item} onSelect={handleClick} />
       ))}
     </div>
   );
 }
+```
+
+**纯展示组件**（必须用 `memo` 包裹）：
+
+```tsx
+import { memo } from "react";
+
+export type ItemCardProps = {
+  item: SomeType;
+  onSelect: (id: string) => void;
+};
+
+export const ItemCard = memo(function ItemCard({ item, onSelect }: ItemCardProps) {
+  return (
+    <div onClick={() => onSelect(item.id)}>
+      {item.name}
+    </div>
+  );
+});
 ```
 
 ### 14.4 禁止事项
@@ -1045,6 +1113,69 @@ export function MyComponent({ items, selectedId, onSelect }: MyComponentProps) {
 | `useEffect` 做数据获取（新代码） | 竞态风险、清理复杂 | 封装在业务 Hook 中统一管理 |
 | 在组件中直接 `localStorage.setItem` | 副作用散落 | 封装到 `utils/storage.ts` 或 Zustand persist |
 | 魔法数字 / 魔法字符串 | 可读性差 | 提取为命名常量 |
+
+### 14.5 渲染性能优化
+
+> 详见 `.cursor/rules/react-performance.rule.mdc`，此处仅做概要。
+
+React 默认行为：父组件重渲染时，所有子组件也会重渲染，即使 props 没有变化。在列表渲染、多区域联动等场景中，这会累积成明显的页面卡顿。
+
+#### React.memo
+
+| 场景 | 是否使用 memo |
+|------|-------------|
+| 纯展示组件（只依赖 props 渲染） | **必须** |
+| 列表项组件（在 `.map()` 中渲染） | **必须** |
+| 高频更新父组件下的子组件 | **必须** |
+| 页面入口组件 | 不需要 |
+| 非常轻量的组件（1-2 个 DOM 节点） | 不需要 |
+
+```tsx
+import { memo } from "react";
+
+export const UserCard = memo(function UserCard({ user, onClick }: UserCardProps) {
+  return <div onClick={onClick}>{user.name}</div>;
+});
+```
+
+#### useCallback
+
+传给 `memo` 子组件的回调 **必须** 用 `useCallback` 包裹，否则 `memo` 无效（每次渲染创建新函数引用）：
+
+```tsx
+const handleSelect = useCallback((id: string) => {
+  setSelectedId(id);
+}, []);
+```
+
+#### useMemo
+
+传给 `memo` 子组件的派生对象/数组、大列表排序/过滤 **必须** 用 `useMemo`：
+
+```tsx
+const filteredList = useMemo(
+  () => items.filter((item) => item.status === activeStatus),
+  [items, activeStatus],
+);
+```
+
+#### memo + useCallback 成对使用
+
+| 层 | memo | useCallback | useMemo |
+|----|------|-------------|---------|
+| 页面入口 | 不需要 | **必须**：传给子组件的回调 | **按需**：跨区域派生数据 |
+| 区域组件 | 按需 | **必须**：传给 memo 子组件的回调 | **按需**：排序/过滤 |
+| 业务 Hook | — | **必须**：返回的 action 函数 | 按需 |
+| 纯展示组件 | **必须** | 不需要 | 不需要 |
+
+#### 常见问题
+
+| 问题 | 原因 | 修正 |
+|------|------|------|
+| 用了 memo 子组件还是重渲染 | 传了内联对象/函数作 props | 用 `useCallback` / `useMemo` 包裹 |
+| 列表滚动/操作卡顿 | 列表项组件未 memo | 列表项统一 memo，回调用 `useCallback` |
+| 搜索框输入卡顿 | 输入触发整页重渲染 | 重型子组件用 memo 隔离 |
+| `.map()` 中的内联函数 | 每个 item 的回调引用都是新的 | 回调接收 id，子组件内部 `onClick={() => onSelect(item.id)}` |
 
 ---
 
@@ -1067,10 +1198,10 @@ export function MyComponent({ items, selectedId, onSelect }: MyComponentProps) {
 
 | 层 | 文件位置 | 核心职责 |
 |---|---|---|
-| 页面入口 | `pages/<Name>/index.tsx` | 编排组件、管理跨区域共享状态 |
+| 页面入口 | `pages/<Name>/index.tsx` | 编排组件、管理跨区域共享状态、`useCallback`/`useMemo` 保持引用稳定 |
 | 区域组件 | `pages/<Name>/components/<Region>Panel.tsx` | 区域内部 UI 自治，通过 props 回调对外通信 |
-| 业务 Hooks | `pages/<Name>/hooks/use<Domain>.ts` | API 调用、数据状态、业务计算，返回 state + actions |
-| 纯展示组件 | `pages/<Name>/components/<Widget>View.tsx` | 只接收 props，不调用 API/Hook |
+| 业务 Hooks | `pages/<Name>/hooks/use<Domain>.ts` | API 调用、数据状态、业务计算，返回 state + actions（action 用 `useCallback`） |
+| 纯展示组件 | `pages/<Name>/components/<Widget>View.tsx` | 只接收 props，不调用 API/Hook，**必须 `memo` 包裹** |
 
 ### 何时使用全局 Store vs 页面 Hook
 
@@ -1112,13 +1243,19 @@ export function MyComponent({ items, selectedId, onSelect }: MyComponentProps) {
 |----|---------|
 | react | 19.x |
 | react-dom | 19.x |
-| typescript | 5.x |
+| typescript | 5.8+ |
 | vite | 6.x |
-| antd | 5.x |
+| @vitejs/plugin-react | 4.x |
+| antd | 6.x |
+| @ant-design/icons | 6.x |
 | tailwindcss | 4.x |
 | react-router-dom | 6.x |
 | zustand | 5.x |
 | axios | 1.x |
+| clsx | 2.x |
+| less | 4.x |
+| vite-plugin-svgr | 5.x |
+| oxlint | 1.x |
 
 ---
 
@@ -1138,7 +1275,7 @@ pnpm build
 |--------|---------|
 | 代码分割 | Vite `manualChunks` 分离 vendor/antd |
 | 懒加载 | 路由级 `React.lazy()` |
-| Tree-shaking | Ant Design v5 默认支持，无需额外配置 |
+| Tree-shaking | Ant Design v6 默认支持，无需额外配置 |
 | 资源压缩 | Vite 生产模式默认 minify |
 | gzip/brotli | 通过 `vite-plugin-compression` 或 Nginx 配置 |
 
@@ -1171,12 +1308,14 @@ steps:
 | `pnpm-lock.yaml` | 依赖锁文件 | 是 |
 | `.npmrc` | pnpm/npm 配置 | 是 |
 | `.node-version` | Node 版本锁定 | 是 |
-| `tsconfig.json` | TypeScript 配置 | 是 |
+| `tsconfig.json` + `tsconfig.app.json` + `tsconfig.node.json` | TypeScript 配置（项目引用） | 是 |
 | `vite.config.ts` | Vite 构建配置 | 是 |
 | `oxlintrc.json` | oxlint 规则 | 是 |
+| `.prettierrc` | Prettier 格式化规则 | 是 |
+| `.prettierignore` | Prettier 忽略文件 | 是 |
 | `.editorconfig` | 编辑器通用格式 | 是 |
 | `.gitignore` | Git 忽略规则 | 是 |
-| `.env` / `.env.*` | 环境变量 | 是 |
+| `.env` / `.env.development` / `.env.production` | 环境变量（`.env.local` 不提交） | 是 |
 | `vitest.config.ts` | Vitest 测试配置 | 推荐 |
 | `.vscode/settings.json` | 编辑器设置 | 推荐 |
 | `.vscode/extensions.json` | 推荐扩展 | 推荐 |

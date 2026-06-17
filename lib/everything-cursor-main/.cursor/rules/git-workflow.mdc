@@ -1,0 +1,73 @@
+---
+description: Git commit format and PR process - conventional commits
+globs: 
+alwaysApply: true
+---
+
+# Git Workflow
+
+## Conventional Commits
+
+Format: `type(scope): description`
+
+### Types
+- `feat`: New feature
+- `fix`: Bug fix
+- `docs`: Documentation
+- `style`: Formatting (no code change)
+- `refactor`: Code restructuring
+- `test`: Adding tests
+- `chore`: Maintenance tasks
+
+### Examples
+
+```bash
+feat(auth): add OAuth2 login support
+fix(cart): resolve quantity update bug
+docs(api): update endpoint documentation
+refactor(user): extract validation logic
+test(checkout): add integration tests
+```
+
+## Branch Naming
+
+```
+feature/add-user-auth
+bugfix/cart-total-calculation
+hotfix/security-patch
+release/v1.2.0
+```
+
+## PR Process
+
+### Before Creating PR
+- [ ] All tests pass
+- [ ] Code follows style guidelines
+- [ ] No linting errors
+- [ ] Self-reviewed changes
+
+### PR Description Template
+
+```markdown
+## Summary
+Brief description of changes
+
+## Changes
+- Change 1
+- Change 2
+
+## Testing
+- [ ] Unit tests added
+- [ ] Integration tests pass
+- [ ] Manual testing completed
+
+## Screenshots (if applicable)
+```
+
+## Code Review Checklist
+
+- [ ] Logic is correct
+- [ ] Error handling present
+- [ ] No security issues
+- [ ] Tests are adequate
+- [ ] Documentation updated

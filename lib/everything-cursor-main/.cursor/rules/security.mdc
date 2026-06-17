@@ -1,0 +1,115 @@
+---
+description: Security checklist and guidelines - no hardcoded secrets, input validation, SQL injection prevention
+globs: 
+alwaysApply: true
+---
+
+# Security Guidelines
+
+## Mandatory Security Checks
+
+Before ANY commit:
+- [ ] No hardcoded secrets (API keys, passwords, tokens)
+- [ ] All user inputs validated
+- [ ] SQL injection prevention (parameterized queries)
+- [ ] XSS prevention (sanitized HTML)
+- [ ] CSRF protection enabled
+- [ ] Authentication/authorization verified
+- [ ] Rate limiting on all endpoints
+- [ ] Error messages don't leak sensitive data
+
+## Secret Management
+
+```typescript
+// NEVER: Hardcoded secrets
+const apiKey = "sk-proj-xxxxx"
+
+// ALWAYS: Environment variables
+const apiKey = process.env.OPENAI_API_KEY
+
+if (!apiKey) {
+  throw new Error('OPENAI_API_KEY not configured')
+}
+```
+
+## Security Checklist by Category
+
+### Authentication & Authorization
+- Use secure session management
+- Implement proper logout functionality
+- Use HTTPS everywhere
+- Implement account lockout after failed attempts
+- Use bcrypt/argon2 for password hashing (not MD5/SHA1)
+
+### Data Protection
+- Encrypt sensitive data at rest
+- Use secure transmission (TLS 1.3)
+- Implement proper access controls
+- Sanitize all user inputs
+
+### API Security
+- Use API keys or OAuth 2.0
+- Implement rate limiting
+- Validate all request parameters
+- Use parameterized queries for database access
+
+### Input Validation
+
+```typescript
+import { z } from 'zod'
+
+const UserSchema = z.object({
+  email: z.string().email(),
+  name: z.string().min(1).max(100),
+  age: z.number().int().min(0).max(150)
+})
+
+// Validate before processing
+const validated = UserSchema.parse(req.body)
+```
+
+### SQL Injection Prevention
+
+```typescript
+// WRONG: SQL Injection vulnerable
+const query = `SELECT * FROM users WHERE id = ${userId}`
+
+// CORRECT: Parameterized query
+const query = 'SELECT * FROM users WHERE id = $1'
+await db.query(query, [userId])
+
+// CORRECT: Using ORM
+await prisma.user.findUnique({ where: { id: userId } })
+```
+
+### XSS Prevention
+
+```typescript
+// WRONG: XSS vulnerable
+<div dangerouslySetInnerHTML={{ __html: userComment }} />
+
+// CORRECT: Use sanitization library if HTML needed
+import DOMPurify from 'dompurify'
+<div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(userComment) }} />
+
+// BEST: Avoid HTML, use plain text
+<div>{userComment}</div>
+```
+
+## Security Response Protocol
+
+If security issue found:
+1. **STOP** immediately
+2. **ASSESS** severity (CRITICAL/HIGH/MEDIUM/LOW)
+3. **FIX** CRITICAL issues before continuing
+4. **ROTATE** any exposed secrets
+5. **REVIEW** codebase for similar issues
+
+## Severity Levels
+
+| Level | Description | Action |
+|-------|-------------|--------|
+| CRITICAL | Data breach, auth bypass, RCE | Fix immediately |
+| HIGH | SQL injection, XSS, CSRF | Fix before deploy |
+| MEDIUM | Missing rate limiting | Fix soon |
+| LOW | Minor info leak | Fix when possible |

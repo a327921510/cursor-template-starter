@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Code quality checks — conceptual definitions. Integrate with husky + lint-staged for actual Git hook enforcement. See README.md for setup instructions.",
+  "checks": [
+    {
+      "name": "no-console-log",
+      "description": "Detect console.log statements in source code",
+      "pattern": "\\.(ts|tsx|js|jsx)$",
+      "excludePattern": "\\.(test|spec)\\.(ts|tsx|js|jsx)$",
+      "search": "console\\.log",
+      "severity": "warning",
+      "message": "Remove console.log before committing. Use a structured logger instead."
+    },
+    {
+      "name": "no-hardcoded-secrets",
+      "description": "Detect hardcoded API keys, secrets, and credentials",
+      "pattern": "\\.(ts|tsx|js|jsx|json)$",
+      "excludePattern": "\\.example$|\\.template$",
+      "search": "(api[_-]?key|secret|password|token|credential)\\s*[=:]\\s*['\"][^'\"]{8,}['\"]",
+      "severity": "error",
+      "message": "Possible hardcoded secret detected. Use environment variables instead."
+    },
+    {
+      "name": "no-ts-ignore",
+      "description": "Detect @ts-ignore comments that hide type errors",
+      "pattern": "\\.(ts|tsx)$",
+      "search": "@ts-ignore|@ts-nocheck",
+      "severity": "error",
+      "message": "Do not use @ts-ignore or @ts-nocheck. Fix the type error instead."
+    },
+    {
+      "name": "no-any-type",
+      "description": "Detect explicit 'any' type annotations",
+      "pattern": "\\.(ts|tsx)$",
+      "search": ":\\s*any\\b|as\\s+any\\b|<any>",
+      "severity": "warning",
+      "message": "Avoid 'any' type. Use 'unknown' with type narrowing, or define a proper type."
+    }
+  ]
+}

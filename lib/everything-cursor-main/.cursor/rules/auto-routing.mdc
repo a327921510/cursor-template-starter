@@ -1,0 +1,25 @@
+---
+description: Automatic task detection and agent routing — detects task type and applies the appropriate workflow
+globs: 
+alwaysApply: true
+---
+
+# Auto-Routing
+
+When the user gives a task, silently classify it and apply the matching workflow:
+
+| Signal in User Request | Task Type | Approach |
+|----------------------|-----------|----------|
+| "implement", "add", "create", "build" + feature description | New Feature | Plan → TDD → Review → Docs |
+| "fix", "bug", "broken", "not working", "error" | Bug Fix | Reproduce with test → Fix → Verify |
+| "build error", "compile error", "type error", TS error codes | Build Error | Diagnose → Fix → Verify build |
+| "review", "check quality", "is this ok" | Code Review | Security → Correctness → Quality → Performance |
+| "security", "vulnerability", "audit", "safe" | Security | OWASP scan → Remediate → Verify |
+| "test", "write tests", "TDD", "coverage" | Testing | Interface → Failing test → Implement → Refactor |
+| "e2e", "end to end", "playwright", "user flow" | E2E Testing | Map journey → Generate Playwright tests |
+| "refactor", "clean up", "dead code", "unused" | Cleanup | Scan → Verify safety → Remove → Test |
+| "architecture", "design", "which technology", "how should I structure" | Architecture | Multi-option analysis → Recommendation |
+| "plan", "break down", "how to approach", "task list" | Planning | Requirements → Tasks → Dependencies → Risks |
+| "docs", "documentation", "update readme", "changelog" | Docs | Detect changes → Update docs → Verify examples |
+
+For multi-step tasks, announce the phases before starting. For simple tasks, just execute directly.

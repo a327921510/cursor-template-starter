@@ -1,0 +1,65 @@
+---
+description: React 渲染性能规则（memo / useCallback / useMemo 的取舍）
+globs:
+  - "src/**/*.{ts,tsx}"
+alwaysApply: false
+---
+
+# React 渲染性能规则
+
+> 完整代码示例、常见问题与修正、按四层架构的分工细则：参见
+> `.cursor/skills/generate-page/references/react-performance-guide.md`。
+
+## 第一性原理
+
+父组件重渲染 → 所有子组件重渲染（即使 props 没变）。`memo` / `useCallback` / `useMemo` 用于跳过这些不必要的重渲染。**三者必须配合使用**——只用其中一个，另一个就白费。
+
+## React.memo
+
+| 必须使用 | 不需要 |
+|---|---|
+| 纯展示组件（只依赖 props 渲染） | 组件本身只有几个 DOM 节点 |
+| 列表项组件（在 `.map()` 中渲染） | props 每次都变（如内联对象/函数） |
+| 接收复杂 props 但渲染开销大的组件 | 页面入口组件 |
+| 高频更新父组件下的子组件 | — |
+
+**写法**：`memo()` 内部必须使用具名函数（`memo(function Xxx() {})`），不用匿名箭头函数。
+
+## useCallback
+
+| 必须使用 | 不需要 |
+|---|---|
+| 回调作为 props 传给 `memo` 子组件 | 直接绑到原生 DOM 元素（`<button onClick>`） |
+| 回调作为 `useEffect` 的依赖 | 子组件没有 `memo` 包裹 |
+| 业务 Hook 返回给外部使用的 action | 组件渲染频率很低 |
+
+## useMemo
+
+| 必须使用 | 不需要 |
+|---|---|
+| 计算量大的派生数据（排序、过滤、聚合大列表） | 简单的字符串拼接、布尔判断 |
+| 创建新对象/数组作为 props 传给 `memo` 子组件 | 结果不传给 memo 子组件且不作为 effect 依赖 |
+| 作为 `useEffect` 的依赖 | — |
+
+## 四层架构中的性能分工
+
+| 层 | memo | useCallback | useMemo |
+|----|------|-------------|---------|
+| 页面入口 | 不需要 | **必须**：传给子组件的所有回调 | **按需**：跨区域派生数据 |
+| 区域组件 | **按需**：父组件高频更新时 | **必须**：传给内部 memo 子组件的回调 | **按需**：区域内排序/过滤 |
+| 业务 Hook | — | **必须**：返回的所有 action | **按需**：缓存计算结果 |
+| 纯展示组件 | **必须** | — | — |
+
+## 列表场景的回调模式
+
+`.map()` 中**不要**写内联箭头函数作为 memo 子组件的 props（每个列表项的回调引用都会变，memo 失效）。
+
+正确做法：父组件用 `useCallback` 包裹 id 回调，子组件内部调用 `onClick(item.id)`。
+
+## 禁止事项
+
+- 在 `memo` 内部使用匿名箭头函数（`memo(() => { ... })`）
+- 对所有组件无脑加 `memo`（先识别瓶颈再优化）
+- `useCallback` / `useMemo` 遗漏依赖项（导致 stale closure bug）
+- 在 `.map()` 中写内联箭头函数作为 memo 子组件的 props
+- 用 `useState` / Context 持有频繁变化的值并跨多个重组件共享（应抽出为局部状态或下沉到具体子组件）
